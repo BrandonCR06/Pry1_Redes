@@ -23,6 +23,7 @@ import pry1_redes.Model.ProtocolFactory;
 public class Controller {
     private Main_Menu menu;
     private String protocol = "Utopia";
+    private boolean buttonStop = false;
     
 
     public static void main(String[]     args) {
@@ -42,6 +43,13 @@ public class Controller {
                 protocol = selectedItem;                                               
             }
         });
+         menu.jButton1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {                
+                
+                buttonStop = true;
+            }
+        });
         menu.jButton2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {                
@@ -59,17 +67,33 @@ public class Controller {
        //Crear una capa de fisica
        PhysicalLayer physic1 = new PhysicalLayer(data);
        PhysicalLayer physic2 = new PhysicalLayer(data);
-       NetworkLayer network2 = new NetworkLayer(new Packet("cualquier mierda"));
+       NetworkLayer network2 = new NetworkLayer(new Packet("cualquier cosa"));
        Protocol toUseProtocol = new ProtocolFactory().createProtocol(this.protocol);
        
        Machine machine1 = new Machine(toUseProtocol,physic1, network1);
        Machine machine2 = new Machine(toUseProtocol,physic2, network2);
        //Aqui no se ha seteado el paquete debería imprimir cualquier vara
        System.out.println(machine1.getNetwork().getPacket().getHeader());
-       machine1.getProtocol().send(machine1, machine2);
-       machine2.getProtocol().receive(machine1, machine2);
-       //Aqui se seteo, debería imprimir cualquier mierda
-       System.out.println(machine1.getNetwork().getPacket().getHeader());
+       //Crear un nuevo hilo para poder hacer la pausa
+       Thread myThread = new Thread() {
+       public void run() {
+           while(!buttonStop){
+           machine1.getProtocol().send(machine1, machine2);       
+           //Aqui se seteo, debería imprimir cualquier cosa
+           
+           menu.jLabel3.setText(machine1.info);
+           System.out.println(machine2.getNetwork().getPacket().getHeader());           
+           }
+           
+           System.out.println("Process Ended");
+           menu.jLabel3.setText("System Paused");
+           
+           buttonStop = false;
+        }
+    };
+    myThread.start(); // start the new thread
+     
+       
     }
      public Controller(){
          menu = new Main_Menu();

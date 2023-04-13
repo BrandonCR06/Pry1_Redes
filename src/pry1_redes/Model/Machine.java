@@ -19,42 +19,38 @@ public class Machine {
     private Protocol protocol;
     private PhysicalLayer physical;
     private NetworkLayer network;
-    private ArrayList<EventType> events;
+    public String info = "";
+    
 
     public Machine(Protocol protocol, PhysicalLayer physical, NetworkLayer network) {
         this.protocol = protocol;
         this.physical = physical;
         this.network = network;
-        this.events = new ArrayList<EventType>();
+        
         
     }   
-    
-    public void addEvent(EventType event){
-        this.events.add(event);
-    }
+   
     public Frame fromPhysicalLayer(){
         return physical.getFrame();
     }
-    public void toPhysicalLayer( Frame frame){
+    public void toPhysicalLayer( Frame frame){        
+        //this.physical.addEvent(this.physical.validFrame(frame));
         physical.setFrame(frame);
     }
     public Packet fromNetworkLayer(){
+        
         return network.getPacket();
     }
     
     public void toNetworkLayer( Packet packet){
-        network.setPacket(packet);
+        //this.network.addEvent(this.network.validPacket(packet));
+        network.setPacket(packet);  
     }
    
-    
 
     public Protocol getProtocol() {
         return protocol;
     }
-    /**
-    private Protocol createProtocol(PhysicalLayer physical, NetworkLayer network) {
-        return new Protocol(physical)
-    }*/
     
 
     public void setProtocol(Protocol protocol) {

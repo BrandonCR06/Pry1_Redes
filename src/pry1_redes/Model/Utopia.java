@@ -28,7 +28,8 @@ public class Utopia implements Protocol {
         Packet packet= sender.fromNetworkLayer();
         Frame data = new Frame("",0,0,packet.getHeader());
         receiver.toPhysicalLayer(data);
-        receiver.addEvent(EventType.frame_arrival);
+        receiver.getProtocol().receive(receiver, sender);
+        
         
         
         
@@ -40,6 +41,7 @@ public class Utopia implements Protocol {
     public void receive(Machine receiver, Machine sender) {
         Frame frame= receiver.fromPhysicalLayer();       
         receiver.toNetworkLayer(new Packet(frame.getPacketInformation()));
+        
         
         
     }
