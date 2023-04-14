@@ -19,8 +19,7 @@ public class ProtocolFactory {
         hashProtocols.put("PAR", new PAR());
         hashProtocols.put("go-back-n", new GoBackN());
         hashProtocols.put("selective-repeat", new SelectiveRepeat());
-        
-        
+        hashProtocols.put("sliding window de 1 bit", new SlidingWindow());
     }
     
     public Protocol createProtocol(String protocol){

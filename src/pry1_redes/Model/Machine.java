@@ -72,5 +72,17 @@ public class Machine {
     public void setNetwork(NetworkLayer network) {
         this.network = network;
     }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
+    }
+    
+    
+    
+    
     
 }
