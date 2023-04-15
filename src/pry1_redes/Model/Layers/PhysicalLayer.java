@@ -5,6 +5,8 @@
 package pry1_redes.Model.Layers;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import pry1_redes.Enums.EventType;
 import pry1_redes.Model.DataInfo.Frame;
 
@@ -15,6 +17,9 @@ import pry1_redes.Model.DataInfo.Frame;
 public class PhysicalLayer {
     private ArrayList<EventType> events;
     private Frame frame;
+    private double errorProb;
+    
+    
     
     
     
@@ -31,11 +36,17 @@ public class PhysicalLayer {
     public void addEvent(EventType event){
         this.events.add(event);
     }
+    public double getErrPor(){
+        return this.errorProb;
+    }
+    public void seProb(double prob){
+        this.errorProb = prob/100;
+    }
     public PhysicalLayer(Frame frame) {
         this.frame = frame;
-        this.events = new ArrayList<EventType>();
+        this.events = new ArrayList<EventType>(); 
+        
     }
-
     public Frame getFrame() {
         return frame;
     }

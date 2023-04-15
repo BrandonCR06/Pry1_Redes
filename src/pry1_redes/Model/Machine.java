@@ -5,6 +5,7 @@
 package pry1_redes.Model;
 
 import java.util.ArrayList;
+import java.util.Random;
 import pry1_redes.Enums.EventType;
 import pry1_redes.Model.DataInfo.Frame;
 import pry1_redes.Model.DataInfo.Packet;
@@ -33,8 +34,11 @@ public class Machine {
     public Frame fromPhysicalLayer(){
         return physical.getFrame();
     }
-    public void toPhysicalLayer( Frame frame){        
-        //this.physical.addEvent(this.physical.validFrame(frame));
+    public void toPhysicalLayer( Frame frame){             
+        double p = this.getPhysical().getErrPor();
+        System.out.println(p);
+        EventType option = new Random().nextDouble() > p  ? EventType.frame_arrival  : EventType.cksum_err;
+        this.getPhysical().addEvent(option);
         physical.setFrame(frame);
     }
     public Packet fromNetworkLayer(){

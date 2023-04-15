@@ -29,6 +29,9 @@ public class Utopia implements Protocol {
         Frame data = new Frame("",0,0,packet.getHeader());
         receiver.toPhysicalLayer(data);
         receiver.getProtocol().receive(receiver, sender);
+         String result = "Info: sender sending to receiver\nFrame:\t\nType:"+data.getFrameType()+"\nSecuenceNum:"+data.getSequenceNumber()+
+        "\nPacket:"+data.getPacketInformation()+"\nConfNumb:"+data.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
+        receiver.info = result;
         
         
         
@@ -39,8 +42,12 @@ public class Utopia implements Protocol {
 
     @Override
     public void receive(Machine receiver, Machine sender) {
-        Frame frame= receiver.fromPhysicalLayer();       
-        receiver.toNetworkLayer(new Packet(frame.getPacketInformation()));
+        Frame data= receiver.fromPhysicalLayer();       
+        receiver.toNetworkLayer(new Packet(data.getPacketInformation()));
+         String result = "Info: receiver receiving \nFrame:\t\nType:"+data.getFrameType()+"\nSecuenceNum:"+data.getSequenceNumber()+
+        "\nPacket:"+data.getPacketInformation()+"\nConfNumb:"+data.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
+        receiver.info = result;
+        
         
         
         
