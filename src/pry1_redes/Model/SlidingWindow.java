@@ -19,13 +19,15 @@ public class SlidingWindow implements Protocol {
     public int next_frame_to_send = 0;
     public Frame r, s = new Frame("",0,1,"");
     public Packet buffer;
-    public String res ="";
+    public String info = "";
     
     public SlidingWindow(){
         
     }
     @Override
     public void send(Machine receiver, Machine sender) {
+        
+        receiver.info = "";
         
         // Fetch a packet from the network layer
         this.buffer = receiver.fromNetworkLayer();
@@ -34,10 +36,17 @@ public class SlidingWindow implements Protocol {
         this.s.setPacketInformation(this.buffer.getHeader());
         this.s.setSequenceNumber(this.next_frame_to_send);
         this.s.setConfirmNumber(1-this.frame_expected); // piggybacked ack
-        res+="Se recibe de la maquina"+sender.getInfo()+"\n";
-        res+="Se obtuvo el FRAME ACTUAL: SqcNumber" + this.s.getSequenceNumber()+"\n";
-        res+="Se obtuvo el FRAME ACTUAL: CfrNumber" + this.s.getConfirmNumber()+"\n";
-        res+="---------------------------";
+        System.out.println("Se recibe de la maquina "+sender.getName());
+        System.out.println("FRAME ACTUAL: SqcNumber" + this.s.getSequenceNumber());
+        System.out.println("CfrNumber" + this.s.getConfirmNumber());
+        System.out.println("---------------------------");
+        
+        info += "Se recibe de la maquina "+sender.getName()+"\n";
+        info += "qcNumber -> " + this.s.getSequenceNumber()+"\n";
+        info += "CfrNumber -> " + this.s.getConfirmNumber()+"\n";
+        info += "Packet -> " + this.s.getPacketInformation()+"\n";
+        info += "---------------------------"+"\n";
+        
         
         // Transmit the frame
         receiver.toPhysicalLayer(s);  
@@ -51,13 +60,12 @@ public class SlidingWindow implements Protocol {
                 this.r = receiver.fromPhysicalLayer();
                 
                 if(r.getSequenceNumber() == this.frame_expected){
-                    res+="true1";
                     receiver.toNetworkLayer(new Packet(""));
                     this.frame_expected = invert(this.frame_expected);
                 }
                 if(r.getConfirmNumber()== this.next_frame_to_send){
-                    res+="true2"+"\n";
-                    res+="Se confirmó el paquete de "+receiver.getInfo()+" en la "+sender.getInfo()+"\n";
+                    System.out.println("Se confirmó el paquete de "+receiver.getInfo()+" en la "+sender.getInfo());
+                    info += "Se confirmó el paquete de "+ receiver.getName()+" en la "+sender.getName()+"\n";
                     // Stop timer
                     this.buffer= sender.fromNetworkLayer();
                     this.next_frame_to_send = invert(this.next_frame_to_send);
@@ -76,12 +84,19 @@ public class SlidingWindow implements Protocol {
                 receiver.toPhysicalLayer(s);  
                 // Start timer
                 
-                res+="---------------------------"+"\n";
-                res+="Se envia desde la "+sender.getInfo()+"\n";
-                res+="Se envia el FRAME ACTUAL: SqcNumber" + this.s.getSequenceNumber()+"\n";
-                res+="Se envia el FRAME ACTUAL: CfrNumber" + this.s.getConfirmNumber()+"\n";
-                res+="---------------------------"+"\n";
-                receiver.info = res;
+                System.out.println("---------------------------");
+                System.out.println("Se envia desde la maquina "+sender.getName());
+                System.out.println("SqcNumber" + this.s.getSequenceNumber());
+                System.out.println("CfrNumber" + this.s.getConfirmNumber());
+                System.out.println("---------------------------");
+                
+                info += "---------------------------"+"\n";
+                info += "Se envia desde la maquina "+sender.getName()+"\n";
+                info += "SqcNumber -> " + this.s.getSequenceNumber()+"\n";
+                info += "CfrNumber -> " + this.s.getConfirmNumber()+"\n";
+                info += "Packet - > " + this.s.getPacketInformation()+"\n";
+                info += "---------------------------"+"\n";
+                receiver.info = getLast12Lines(info);
                 
             }
         /*
@@ -91,6 +106,16 @@ public class SlidingWindow implements Protocol {
         System.out.println("Se obtuvo el FRAME ACTUAL: CfrNumber" + frame.getConfirmNumber());
         System.out.println("---------------------------");*/
         
+    }
+    
+    public static String getLast12Lines(String input) {
+        String[] lines = input.split("\n");
+        int numLines = lines.length;
+        StringBuilder output = new StringBuilder();
+        for (int i = Math.max(0, numLines - 24); i < numLines; i++) {
+            output.append(lines[i]).append("\n");
+        }
+        return output.toString();
     }
     
     private int invert(int seqNum) {

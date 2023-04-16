@@ -173,9 +173,9 @@ public class Controller {
                Protocol toUseProtocol = new ProtocolFactory().createProtocol(this.protocol);
 
                Machine machine1 = new Machine(toUseProtocol,physic1, network1);
-               machine1.setInfo("Maquina A");
+               machine1.setName("A");
                Machine machine2 = new Machine(toUseProtocol,physic2, network2);
-               machine2.setInfo("Maquina B");
+               machine2.setName("B");
                //Aqui no se ha seteado el paquete debería imprimir cualquier vara
                System.out.println(machine1.getNetwork().getPacket().getHeader());
                //Crear un nuevo hilo para poder hacer la pausa
@@ -186,14 +186,18 @@ public class Controller {
                         System.out.println("PARKOUR 1" );
                         
                         menu.jTextArea1.setText(machine1.info);
+                        menu.jTextArea1.repaint();
+                        
                         try {
-                            Thread.sleep(2000); // Detener durante 5 segundos
+                            Thread.sleep(5000); // Detener durante 5 segundos
                         } catch (InterruptedException e) {
                             // Manejar la excepción si es necesario
                         }
 
                         machine2.getProtocol().send(machine2, machine1);
                         menu.jTextArea1.setText(machine2.info);
+                        menu.jTextArea1.repaint();
+                        
                         System.out.println("PARKOUR 2");
                         //Aqui se seteo, debería imprimir cualquier cosa
 

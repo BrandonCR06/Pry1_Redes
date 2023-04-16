@@ -21,6 +21,7 @@ public class Machine {
     private PhysicalLayer physical;
     private NetworkLayer network;
     public String info = "";
+    public String name;
     
 
     public Machine(Protocol protocol, PhysicalLayer physical, NetworkLayer network) {
@@ -83,6 +84,14 @@ public class Machine {
 
     public void setInfo(String info) {
         this.info = info;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
     
     
