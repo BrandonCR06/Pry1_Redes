@@ -60,7 +60,7 @@ public class SlidingWindow implements Protocol {
                 this.r = receiver.fromPhysicalLayer();
                 
                 if(r.getSequenceNumber() == this.frame_expected){
-                    receiver.toNetworkLayer(new Packet(""));
+                    receiver.toNetworkLayer(new Packet(s.getPacketInformation()));
                     this.frame_expected = invert(this.frame_expected);
                 }
                 if(r.getConfirmNumber()== this.next_frame_to_send){
@@ -99,6 +99,12 @@ public class SlidingWindow implements Protocol {
                 receiver.info = getLast12Lines(info);
                 
             }
+            
+            if(event == EventType.cksum_err){
+                info += "Se detectó un error en un frame, por lo que se volvió a intentar"+"\n";
+                receiver.info = getLast12Lines(info);
+            }
+            
         /*
         System.out.println("---------------------------");
         System.out.println("Se recibe de la maquina"+sender.getInfo());
