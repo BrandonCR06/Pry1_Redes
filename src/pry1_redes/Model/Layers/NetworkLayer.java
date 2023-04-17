@@ -16,8 +16,19 @@ import pry1_redes.Model.DataInfo.Packet;
 public class NetworkLayer {
     private ArrayList<EventType> events;
     private ArrayList<Packet> packets = new ArrayList<Packet>();
+    private boolean enabled = false;
     
     
+    public void enableNetworkLayer(){
+        enabled= true;
+    }
+    public void disableNetworkLayer(){
+        enabled= false;
+    }
+    
+    public boolean networkReady(){
+        return this.enabled;
+    }
     public NetworkLayer(int n) {
         generatePackets(n);
         this.events = new ArrayList<EventType>();

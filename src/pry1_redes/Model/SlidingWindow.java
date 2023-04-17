@@ -17,7 +17,7 @@ public class SlidingWindow implements Protocol {
     public int MAX_SEQ = 1; 
     public int frame_expected = 0;
     public int next_frame_to_send = 0;
-    public Frame r, s = new Frame("",0,1,"");
+    public Frame r, s ;
     public Packet buffer;
     public String info = "";
     
@@ -27,35 +27,24 @@ public class SlidingWindow implements Protocol {
     @Override
     public void send(Machine receiver, Machine sender) {
         
-        receiver.info = "";
         
-        // Fetch a packet from the network layer
-        this.buffer = receiver.fromNetworkLayer();
-        
-        // Prepare to send the initial frame
-        this.s.setPacketInformation(this.buffer.getHeader());
-        this.s.setSequenceNumber(this.next_frame_to_send);
-        this.s.setConfirmNumber(1-this.frame_expected); // piggybacked ack
-        System.out.println("Se recibe de la maquina "+sender.getName());
-        System.out.println("FRAME ACTUAL: SqcNumber" + this.s.getSequenceNumber());
-        System.out.println("CfrNumber" + this.s.getConfirmNumber());
-        System.out.println("---------------------------");
-        
-        info += "Se recibe de la maquina "+sender.getName()+"\n";
-        info += "qcNumber -> " + this.s.getSequenceNumber()+"\n";
-        info += "CfrNumber -> " + this.s.getConfirmNumber()+"\n";
-        info += "Packet -> " + this.s.getPacketInformation()+"\n";
-        info += "---------------------------"+"\n";
-        
-        
-        // Transmit the frame
-        receiver.toPhysicalLayer(s);  
-        // Start timer
         
         //StartTImer
             EventType event = receiver.getPhysical().getLastEvent();
+           
+        
+        
+           System.out.println("Se recibe de la maquina "+sender.getName());
+                System.out.println("FRAME ACTUAL: SqcNumber" + this.s.getSequenceNumber());
+                System.out.println("CfrNumber" + this.s.getConfirmNumber());
+                System.out.println("---------------------------");
+                 info += "Se recibe de la maquina "+sender.getName()+"\n";
+                info += "qcNumber -> " + this.s.getSequenceNumber()+"\n";
+                info += "CfrNumber -> " + this.s.getConfirmNumber()+"\n";
+                info += "Packet -> " + this.s.getPacketInformation()+"\n";
+               info += "---------------------------"+"\n";
             if(event == EventType.frame_arrival){
-                
+               
                 //GET r from physical layer
                 this.r = receiver.fromPhysicalLayer();
                 
@@ -64,7 +53,7 @@ public class SlidingWindow implements Protocol {
                     this.frame_expected = invert(this.frame_expected);
                 }
                 if(r.getConfirmNumber()== this.next_frame_to_send){
-                    System.out.println("Se confirmó el paquete de "+receiver.getInfo()+" en la "+sender.getInfo());
+                    System.out.println("Se confirmó el paquete de "+receiver.getName()+" en la "+sender.getName());
                     info += "Se confirmó el paquete de "+ receiver.getName()+" en la "+sender.getName()+"\n";
                     // Stop timer
                     this.buffer= sender.fromNetworkLayer();
@@ -81,7 +70,9 @@ public class SlidingWindow implements Protocol {
                 this.s.setConfirmNumber(1-this.frame_expected); // piggybacked ack
 
                 // Transmit the frame
-                receiver.toPhysicalLayer(s);  
+                sender.toPhysicalLayer(s);  
+                
+                
                 // Start timer
                 
                 System.out.println("---------------------------");
@@ -96,14 +87,18 @@ public class SlidingWindow implements Protocol {
                 info += "CfrNumber -> " + this.s.getConfirmNumber()+"\n";
                 info += "Packet - > " + this.s.getPacketInformation()+"\n";
                 info += "---------------------------"+"\n";
-                receiver.info = getLast12Lines(info);
+                
+                receiver.info = info;
+                
+                
                 
             }
             
             if(event == EventType.cksum_err){
                 info += "Se detectó un error en un frame, por lo que se volvió a intentar"+"\n";
-                receiver.info = getLast12Lines(info);
+                receiver.info = info;
             }
+            info ="";
             
         /*
         System.out.println("---------------------------");

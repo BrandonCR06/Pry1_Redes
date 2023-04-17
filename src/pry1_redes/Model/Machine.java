@@ -36,8 +36,7 @@ public class Machine {
         return physical.getFrame();
     }
     public void toPhysicalLayer( Frame frame){             
-        double p = this.getPhysical().getErrPor();
-        System.out.println(p);
+        double p = this.getPhysical().getErrPor();        
         EventType option = new Random().nextDouble() > p  ? EventType.frame_arrival  : EventType.cksum_err;
         this.getPhysical().addEvent(option);
         physical.setFrame(frame);

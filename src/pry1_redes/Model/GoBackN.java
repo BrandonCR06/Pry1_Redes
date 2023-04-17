@@ -13,7 +13,7 @@ import pry1_redes.Enums.EventType;
  */
 public class GoBackN implements Protocol{
 
-    private static final int MAX_SEQ = 7;
+    private static final int MAX_SEQ = 4;
     private Packet[] buffer = new Packet[MAX_SEQ + 1];
     private int nextFrameToSend = 0;
     private int ackExpected = 0;
@@ -25,16 +25,26 @@ public class GoBackN implements Protocol{
     public void send(Machine receiver, Machine sender){
         this.send_receive(receiver, sender);
     }
-    public void sendData(Machine receiver, Machine sender) {
+    public void sendData(Machine receiver, Machine sender, Packet[] buffer) {
         Frame new_frame = new Frame(null, ackExpected, ackExpected, null);
         this.buffer[this.nextFrameToSend] = sender.fromNetworkLayer(); /* fetch new packet */
         new_frame.setPacketInformation(this.buffer[this.nextFrameToSend].getHeader());
         new_frame.setSequenceNumber(this.nextFrameToSend);
         new_frame.setConfirmNumber((this.frameExpected + MAX_SEQ) % (MAX_SEQ + 1));
+        System.out.println("---------------------------");
+                System.out.println("Se envia desde la maquina "+sender.getName());
+                System.out.println("SqcNumber" + new_frame.getSequenceNumber());               
+                System.out.println("CfrNumber" + new_frame.getConfirmNumber());
+                System.out.println("frame_nr" +this.nextFrameToSend);
+                System.out.println("---------------------------");
         receiver.toPhysicalLayer(new_frame); /* transmit the frame */
+        
+        receiver.getNetwork().disableNetworkLayer();
+        receiver.getProtocol().send(receiver, sender);
+        
         // Falta el timer
         // start_timer(frame_nr % NR_BUFS);
-        inc(this.nextFrameToSend); /* advance sender’s upper window */
+        
         
     
     }
@@ -46,49 +56,60 @@ public class GoBackN implements Protocol{
 
     
     public void send_receive(Machine receiver, Machine sender) {
-
+        Frame frame = null;        
         EventType event = receiver.getPhysical().getLastEvent();
-        if (this.network_layer_state){
-            switch(event){
+        if(receiver.getNetwork().networkReady()){
+            event = EventType.network_layer_ready;
+        }
+        switch(event){
+             case network_layer_ready:
+                    this.buffer[this.nextFrameToSend] = sender.fromNetworkLayer();
+                    nBuffered +=  1;
+                    sendData(receiver, sender, buffer);
+                    nextFrameToSend = inc(this.nextFrameToSend);
+                    break;  
+                case ack_timeout:
+                    break;
                 case frame_arrival:
-                    Frame frame = receiver.fromPhysicalLayer();
+                     frame = receiver.fromPhysicalLayer();
+                       System.out.println("---------------------------");
+                System.out.println("Se recibe desde la maquina "+receiver.getName());
+                System.out.println("SqcNumber frame recibido" + frame.getSequenceNumber());
+                System.out.println("CfrNumber" + frame.getConfirmNumber());
+                System.out.println("Expected" + this.frameExpected);
+                System.out.println("---------------------------");
                     if (frame.getSequenceNumber() == this.frameExpected){
                         receiver.toNetworkLayer(new Packet(frame.getPacketInformation()));
-                        inc(this.frameExpected);
+                        frameExpected =inc(this.frameExpected);
                     }
                     while (between(this.ackExpected, frame.getConfirmNumber(), this.nextFrameToSend)){
                         nBuffered = nBuffered - 1;
                         // stop_timer(this.ackExpected % MAX_SEQ);
-                        inc(this.ackExpected);
+                        ackExpected= inc(this.ackExpected);
                     }
                     break;
                 case cksum_err:
+                    System.out.println("ChecksumError");
                     break;
                 case timeout:
                     this.nextFrameToSend = this.ackExpected;
                     for (int i = 1; i <= nBuffered; i++){
-                        sendData(receiver, sender);
-                        inc(this.nextFrameToSend);
+                        sendData(receiver, sender, buffer);
+                        this.nextFrameToSend = inc(this.nextFrameToSend);
                     }
                     break;
-                case network_layer_ready:
-                    Packet packet = this.buffer[this.nextFrameToSend];
-                    nBuffered = nBuffered + 1;
-                    sendData(receiver, sender);
-                    inc(this.nextFrameToSend);
-                    break;
-                case ack_timeout:
-                    break;
+               
                 default:
                     break;
             }
             if (nBuffered < MAX_SEQ){
-                enable_network_layer(receiver);
+                receiver.getNetwork().enableNetworkLayer();
             }
             else{
-                disable_network_layer();
+                receiver.getNetwork().disableNetworkLayer();
             }
-        }
+            
+        
     }
         
 
@@ -101,12 +122,14 @@ public class GoBackN implements Protocol{
         }
     }
 
-    public void inc(int k) {
-        if (k < MAX_SEQ) {
-            k = k + 1;
+    public int inc(int k) {
+        int c  = k;
+        if (c < MAX_SEQ) {
+            c = c + 1;
         } else {
-            k = 0;
+            c = 0;
         }
+        return c;
     }
 
     // public void start_timer(){
@@ -115,7 +138,7 @@ public class GoBackN implements Protocol{
 
     public void enable_network_layer(Machine receiver){
         this.network_layer_state = true;
-        receiver.getPhysical().addEvent(EventType.network_layer_ready);
+        
     }
 
     public void disable_network_layer(){
