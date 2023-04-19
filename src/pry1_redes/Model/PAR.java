@@ -4,10 +4,12 @@
  */
 package pry1_redes.Model;
 
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import pry1_redes.Enums.EventType;
+import pry1_redes.Enums.FrameKind;
 import pry1_redes.Model.DataInfo.Frame;
 import pry1_redes.Model.DataInfo.Packet;
 
@@ -18,62 +20,102 @@ import pry1_redes.Model.DataInfo.Packet;
 public class PAR implements Protocol{
     private int next_frame_to_send = 0;
     private int frame_expected = 0;
-    Timer timer;
-    TimerTask task;
-    private int MAX_SEQ = 1;
+    private HashMap<Integer,Timer> timers;
+    Packet buffer;
+    private int MAX_SEQ =1;
+    private boolean timerEx;
+    private int timerDelay;
     public PAR(){
-      
-     timer = new Timer();
-        task = new TimerTask() {
-            int count = 0;
-            public void run() {
-                count++;
-                System.out.println("Timer ran " + count + " times.");
-            }
-        };
+      timers = new HashMap<Integer,Timer>();
         
     }
     
    
-     public void startTimer(){  
-         
-         timer.purge();
-         
-        task = new TimerTask() {
+     public Timer startTimer(int id){         
+        
+         if(timers.containsKey(id)){timers.remove(id);}
+             
+             TimerTask task;
+            timerEx = false;
+            Timer timer = new Timer();
+            Random rand = new Random();
+            
+            
+            
+            timerDelay = rand.nextInt(401) + 100; // generate a random delay between 100 ms and 400 ms
+            int randomWait = rand.nextInt(801) + 100;
+            task = new TimerTask() {            
             int count = 0;
-            public void run() {
+            
+            
+
+            public void run() {   
+                if(count> 0){
+                    
+                    timerEx = true;
+                }
                 count++;
-                System.out.println("Timer ran " + count + " times.");
+                
             }
         };
-        timer.schedule(task, 0, 500);
+            timer.schedule(task, 0, randomWait);
+        
+           
+             timers.put(id, timer);
+             return timer;
+         
+
+                                                           
 
      }
-     public void stopTask(){
-        task.cancel();
+     public void stopTimer(int id){
+         if(timers.get(id)!= null){
+            timers.get(id).cancel();
+          }
+        
+        
+        
 
      }
-     public void stopTimer(){
-        timer.cancel();
-
-     }
+     public void generateRandomTimeout(Timer timer,Machine receiver){
+        if(timer==null){return;}
+        try {
+            Thread.sleep(timerDelay); // wait for the timeout duration plus a buffer of 1 second
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+            if (!timerEx) {
+                
+                receiver.getPhysical().addEvent(EventType.timeout);
+                timer.cancel();
+               System.out.println("Timeoutnotok!");
+            
+        } else {
+                System.out.println("Timer ok!");
+            }
+       
+    }
     @Override
     public void send(Machine receiver, Machine sender) {
-        Packet buffer = sender.fromNetworkLayer();         
+            buffer = sender.fromNetworkLayer(); 
         
-            Frame s = new Frame("",next_frame_to_send,next_frame_to_send,buffer.getHeader());
-            receiver.toPhysicalLayer(s);                        
-            this.startTimer();                        
+            Frame s = new Frame(FrameKind.data,next_frame_to_send,0,buffer.getHeader());
+            receiver.toPhysicalLayer(s);             
+            generateRandomTimeout(startTimer(s.getSequenceNumber()), receiver);
+            
+             String result = "\nInfo: sender sending to receiver\nFrame:\t\nType:"+s.getFrameType()+"\nSecuenceNum:"+s.getSequenceNumber()+
+                "\nPacket:"+s.getPacketInformation()+"\nConfNumb:"+s.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
+                receiver.info += result;
             receiver.getProtocol().receive(receiver, sender);
             EventType event = sender.getPhysical().getLastEvent();
             if(event == EventType.frame_arrival){
+                s = sender.fromPhysicalLayer();
                 if(s.getConfirmNumber()==next_frame_to_send){
-                    this.stopTask();
+                    this.stopTimer(s.getConfirmNumber());
                     buffer = sender.fromNetworkLayer();
                     next_frame_to_send = invert(next_frame_to_send);
-                     String result = "Info: sender sending to receiver\nFrame:\t\nType:"+s.getFrameType()+"\nSecuenceNum:"+s.getSequenceNumber()+
-                "\nPacket:"+s.getPacketInformation()+"\nConfNumb:"+s.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
-                receiver.info = result;
+                    
                                         
                 }
             }
@@ -97,9 +139,9 @@ public class PAR implements Protocol{
                 }
                 s.setConfirmNumber(1-frame_expected);                
                 sender.toPhysicalLayer(s);
-                 String result = "Info: sender sending to receiver\nFrame:\t\nType:"+s.getFrameType()+"\nSecuenceNum:"+s.getSequenceNumber()+
-                "\nPacket:"+s.getPacketInformation()+"\nConfNumb:"+s.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
-                receiver.info = result;
+                 String result = "\nInfo: receiver sending to sender\nFrame:\t\nType:"+s.getFrameType()+"\nSecuenceNum:"+s.getSequenceNumber()+
+                "\nPacket:"+s.getPacketInformation()+"\nConfNumb:"+s.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent()+"\n\n";
+                receiver.info += result;
                 
             }
         

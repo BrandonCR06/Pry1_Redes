@@ -119,13 +119,15 @@ public class Main_Menu extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(19, 19, 19)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(jButton2)
                                 .addGap(18, 18, 18)
                                 .addComponent(jButton1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 215, Short.MAX_VALUE)
                                 .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
@@ -258,7 +260,7 @@ public class Main_Menu extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSpinner jSpinner1;
+    public javax.swing.JSpinner jSpinner1;
     public javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel machine1;
     private javax.swing.JLabel machine2;

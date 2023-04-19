@@ -7,8 +7,11 @@ package pry1_redes.Controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import pry1_redes.Enums.EventType;
+import pry1_redes.Enums.FrameKind;
 import pry1_redes.Main_Menu;
 import pry1_redes.Model.DataInfo.Frame;
+import pry1_redes.Model.DataInfo.Packet;
+import pry1_redes.Model.GoBackN;
 import pry1_redes.Model.Layers.NetworkLayer;
 import pry1_redes.Model.Layers.PhysicalLayer;
 import pry1_redes.Model.Machine;
@@ -27,6 +30,7 @@ public class Controller {
     private String protocol = "Utopia";
     private boolean buttonStop = false;
     private double probErr = 0;
+    private int windowSize = 7;
     
 
     public static void main(String[]     args) {
@@ -53,6 +57,7 @@ public class Controller {
                 buttonStop = true;
             }
         });
+        
         menu.jButton2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {                
@@ -70,21 +75,36 @@ public class Controller {
             
             
             
+            
+            
             // use the parsed integer here
         } catch (NumberFormatException e) {
             // handle the exception if the text cannot be parsed to integer
-            System.out.println(e);
+            
+        }
+        try {
+            Integer window =(Integer)menu.jSpinner1.getValue();
+            this.windowSize = window;
+            
+            
+            
+            
+            // use the parsed integer here
+        } catch (NumberFormatException e) {
+            // handle the exception if the text cannot be parsed to integer
+            
         }
       
+        
        
           if(this.protocol.equals("Utopia") || this.protocol.equals("Stop-and-wait")){
                NetworkLayer network1 = new NetworkLayer(10);
-                Frame data = new Frame("",0,0,"");
+                Frame data = new Frame(FrameKind.data,0,0,"");
                 //Crear una capa de fisica
                 PhysicalLayer physic1 = new PhysicalLayer(data);
                 PhysicalLayer physic2 = new PhysicalLayer(data);
-                physic1.seProb(probErr);
-                physic2.seProb(probErr);
+                physic1.seProb(0);
+                physic2.seProb(0);
                 NetworkLayer network2 = new NetworkLayer(10);
                 Protocol toUseProtocol = new ProtocolFactory().createProtocol(this.protocol);
        
@@ -109,12 +129,13 @@ public class Controller {
 
                          //Aqui se seteo, debería imprimir cualquier cosa
 
-                         menu.jTextArea1.setText(machine1.info);
+                         menu.jTextArea1.setText(machine1.info+"\n"+machine2.info);
+                         
                          System.out.println(machine2.getNetwork().getPacket().getHeader());           
                          }
                          
                          System.out.println("Process Ended");
-                         menu.jTextArea1.setText("System Paused");
+                         
 
                          buttonStop = false;
                       }
@@ -124,7 +145,7 @@ public class Controller {
          }else if(this.protocol.equals("PAR")){
             
            NetworkLayer network1 = new NetworkLayer(10);
-            Frame data = new Frame("",0,0,"");
+            Frame data = new Frame(FrameKind.data,0,0,"");
             //Crear una capa de fisica
             PhysicalLayer physic1 = new PhysicalLayer(data);
             PhysicalLayer physic2 = new PhysicalLayer(data);
@@ -141,7 +162,11 @@ public class Controller {
                 Thread myThread = new Thread() {
                 public void run() {
                     while(!buttonStop){
-                         machine1.getProtocol().send(machine1, machine2);      
+                         machine1.getProtocol().send(machine1, machine2);
+                         menu.jTextArea1.setText(machine1.info);
+                         machine1.info= "";
+                                 
+                         
                          try {
                             Thread.sleep(2000); // Detener durante 5 segundos
                         } catch (InterruptedException e) {
@@ -149,13 +174,13 @@ public class Controller {
                         }
                          //Aqui se seteo, debería imprimir cualquier cosa
 
-                         menu.jTextArea1.setText(machine1.info);
+                         
                          System.out.println(machine2.getNetwork().getPacket().getHeader());           
                          }
                          PAR par = (PAR)machine1.getProtocol();
-                         par.stopTimer();
+                         
                          System.out.println("Process Ended");
-                         menu.jTextArea1.setText("System Paused");                         
+                                                
 
                          buttonStop = false;
                       }
@@ -164,7 +189,7 @@ public class Controller {
           
          } else if(this.protocol.equals("sliding window de 1 bit")) {
                         NetworkLayer network1 = new NetworkLayer(10);
-               Frame data = new Frame("",0,1,"");
+               Frame data = new Frame(FrameKind.data,0,1,"");
                //Crear una capa de fisica
                PhysicalLayer physic1 = new PhysicalLayer(data);
                PhysicalLayer physic2 = new PhysicalLayer(data);
@@ -194,7 +219,7 @@ public class Controller {
         
         prot.buffer = sender.fromNetworkLayer();
         prot2.buffer = receiver.fromNetworkLayer();
-        prot.s = new Frame("",0,1,"");
+        prot.s = new Frame(FrameKind.data,0,1,"");
         // Prepare to send the initial frame
         prot.s.setPacketInformation(prot.buffer.getHeader());
         prot.s.setSequenceNumber(0);
@@ -224,15 +249,7 @@ public class Controller {
                         } catch (InterruptedException e) {
                             // Manejar la excepción si es necesario
                         }
-                        machine2.toPhysicalLayer(prot2.s);  
-                        machine2.getProtocol().send(machine2, machine1);                        
-                        menu.jTextArea1.setText(machine2.info);
-                        menu.jTextArea1.repaint();
-                        try {
-                            Thread.sleep(2000); // Detener durante 5 segundos
-                        } catch (InterruptedException e) {
-                            // Manejar la excepción si es necesario
-                        }
+                       
                         System.out.println("PARKOUR 2");
                         //Aqui se seteo, debería imprimir cualquier cosa
 
@@ -252,7 +269,71 @@ public class Controller {
              
          }else if (this.protocol.equals("go-back-n")){
              NetworkLayer network1 = new NetworkLayer(10);
-                Frame data = new Frame("",0,0,"");
+                Frame data = new Frame(FrameKind.data,0,0,"");
+                //Crear una capa de fisica
+                PhysicalLayer physic1 = new PhysicalLayer(data);
+                PhysicalLayer physic2 = new PhysicalLayer(data);
+                physic1.seProb(probErr);
+                physic2.seProb(probErr);
+                NetworkLayer network2 = new NetworkLayer(10);
+                Protocol toUseProtocol = new ProtocolFactory().createProtocol(this.protocol);
+                //Protocol toUseProtocol2 = new ProtocolFactory().createProtocol(this.protocol);
+                
+                ((GoBackN)toUseProtocol).MAX_SEQ=this.windowSize;
+               ((GoBackN)toUseProtocol).buffer=new Packet[this.windowSize + 1];
+                
+       
+               
+                Machine machine1 = new Machine(toUseProtocol,physic1, network1);
+                Machine machine2 = new Machine(toUseProtocol,physic2, network2);
+                machine1.setName("1");
+                machine2.setName("2");
+                machine1.getNetwork().enableNetworkLayer();
+                //machine2.getNetwork().enableNetworkLayer();
+                //Aqui no se ha seteado el paquete debería imprimir cualquier vara
+                //System.out.println(machine1.getNetwork().getPacket().getHeader());
+                //Crear un nuevo hilo para poder hacer la pausa
+                Thread myThread = new Thread() {
+                public void run() {
+                    while(!buttonStop){
+                        machine1.info = "";
+                        machine2.info = "";
+                        
+                         machine1.getProtocol().send(machine1, machine2);    
+                         menu.jTextArea1.setText(machine1.info);
+                         menu.jTextArea1.repaint();
+                           try {
+                            Thread.sleep(3000); 
+                        } catch (InterruptedException e) {
+                            // Manejar la excepción si es necesario
+                        }
+                           
+                          
+                         
+                       
+
+                         //Aqui se seteo, debería imprimir cualquier cosa
+                                                
+                         
+                         }
+                       try {
+                            Thread.sleep(3000); 
+                        } catch (InterruptedException e) {
+                            // Manejar la excepción si es necesario
+                        }
+                       
+                           
+                         
+                         
+                         
+
+                         buttonStop = false;
+                      }
+                  };
+                  myThread.start(); // start the new thread
+         } else if (this.protocol.equals("selective-repeat")){
+             NetworkLayer network1 = new NetworkLayer(10);
+                Frame data = new Frame(FrameKind.data,0,0,"");
                 //Crear una capa de fisica
                 PhysicalLayer physic1 = new PhysicalLayer(data);
                 PhysicalLayer physic2 = new PhysicalLayer(data);
@@ -301,7 +382,7 @@ public class Controller {
                          buttonStop = false;
                       }
                   };
-                  myThread.start(); // start the new thread
+                  myThread.start();
          }
           
         

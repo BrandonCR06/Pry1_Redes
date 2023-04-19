@@ -6,6 +6,7 @@ package pry1_redes.Model;
 
 import java.util.Random;
 import pry1_redes.Enums.EventType;
+import pry1_redes.Enums.FrameKind;
 import pry1_redes.Model.DataInfo.Frame;
 import pry1_redes.Model.DataInfo.Packet;
 
@@ -19,12 +20,12 @@ public class StopAndWait implements Protocol {
         
         Packet buffer= sender.fromNetworkLayer();
         
-        Frame data = new Frame("",0,0,buffer.getHeader());
-        
+        Frame data = new Frame(FrameKind.data,0,0,buffer.getHeader());
+        String result = "Info: sender sending to receiver\nFrame:\t\n\tType:"+data.getFrameType()+"\n\tSecuenceNum:"+data.getSequenceNumber()+
+        "\n\tPacket:"+data.getPacketInformation()+"\n\tConfNumb:"+data.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
         receiver.toPhysicalLayer(data);        
         receiver.getProtocol().receive(receiver, sender);
-        String result = "Info: sender sending to receiver\nFrame:\t\nType:"+data.getFrameType()+"\nSecuenceNum:"+data.getSequenceNumber()+
-        "\nPacket:"+data.getPacketInformation()+"\nConfNumb:"+data.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
+        
         receiver.info = result;
         
                                 
@@ -38,10 +39,10 @@ public class StopAndWait implements Protocol {
         Packet buffer = new Packet("");        
         s.setPacketInformation(buffer.getHeader());
         receiver.toNetworkLayer(new Packet(""));
-        Frame d = new Frame("",0,0,"");// dummy frame        
+        Frame d = new Frame(FrameKind.ack,0,0,"");// dummy frame        
         sender.toPhysicalLayer(d);        
-        String result = "Info: Receiver\nFrame:\t\nType:"+d.getFrameType()+"\nSecuenceNum::"+d.getSequenceNumber()+
-        "\nPacket:"+d.getPacketInformation()+"\nConfNumb:"+d.getConfirmNumber()+ "EventTriggeredOnSender:"+receiver.getPhysical().getLastEvent();
+        String result = "\nInfo: Receiver sending dummy ack\nFrame:\t\n\tType:"+d.getFrameType()+"\n\tSecuenceNum:"+d.getSequenceNumber()+
+        "\n\tPacket:"+d.getPacketInformation()+"\n\tConfNumb:"+d.getConfirmNumber()+ "EventTriggeredOnSender:"+receiver.getPhysical().getLastEvent();
         sender.info = result;
         
         

@@ -5,6 +5,7 @@
 package pry1_redes.Model;
 
 import pry1_redes.Enums.EventType;
+import pry1_redes.Enums.FrameKind;
 import pry1_redes.Model.DataInfo.Frame;
 import pry1_redes.Model.DataInfo.Packet;
 import pry1_redes.Model.Layers.NetworkLayer;
@@ -26,11 +27,11 @@ public class Utopia implements Protocol {
     @Override
     public void send(Machine receiver, Machine sender) {
         Packet packet= sender.fromNetworkLayer();
-        Frame data = new Frame("",0,0,packet.getHeader());
+        Frame data = new Frame(FrameKind.data,0,0,packet.getHeader());
         receiver.toPhysicalLayer(data);
         receiver.getProtocol().receive(receiver, sender);
-         String result = "Info: sender sending to receiver\nFrame:\t\nType:"+data.getFrameType()+"\nSecuenceNum:"+data.getSequenceNumber()+
-        "\nPacket:"+data.getPacketInformation()+"\nConfNumb:"+data.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
+         String result = "Info: sender sending to receiver\nFrame:\t\n\tType:"+data.getFrameType()+"\n\tSecuenceNum:"+data.getSequenceNumber()+
+        "\n\tPacket:"+data.getPacketInformation()+"\n\tConfNumb:"+data.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
         receiver.info = result;
         
         
@@ -44,9 +45,9 @@ public class Utopia implements Protocol {
     public void receive(Machine receiver, Machine sender) {
         Frame data= receiver.fromPhysicalLayer();       
         receiver.toNetworkLayer(new Packet(data.getPacketInformation()));
-         String result = "Info: receiver receiving \nFrame:\t\nType:"+data.getFrameType()+"\nSecuenceNum:"+data.getSequenceNumber()+
-        "\nPacket:"+data.getPacketInformation()+"\nConfNumb:"+data.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
-        receiver.info = result;
+         String result = "\nInfo: receiver receiving \nFrame:\t\n\tType:"+data.getFrameType()+"\n\tSecuenceNum:"+data.getSequenceNumber()+
+        "\n\tPacket:"+data.getPacketInformation()+"\n\tConfNumb:"+data.getConfirmNumber()+ "\nEventTriggeredOnReceiver:"+receiver.getPhysical().getLastEvent();
+        sender.info = result;
         
         
         

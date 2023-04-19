@@ -4,28 +4,30 @@
  */
 package pry1_redes.Model.DataInfo;
 
+import pry1_redes.Enums.FrameKind;
+
 /**
  *
  * @author ricardosoto
  */
 public class Frame {
-    private String frameType;
+    private FrameKind frameType;
     private int sequenceNumber;
     private int confirmNumber;
     private String packetInformation;
 
-    public Frame(String frameType, int sequenceNumber, int confirmNumber, String packetInformation) {
+    public Frame(FrameKind frameType, int sequenceNumber, int confirmNumber, String packetInformation) {
         this.frameType = frameType;
         this.sequenceNumber = sequenceNumber;
         this.confirmNumber = confirmNumber;
         this.packetInformation = packetInformation;
     }
 
-    public String getFrameType() {
+    public FrameKind getFrameType() {
         return frameType;
     }
 
-    public void setFrameType(String frameType) {
+    public void setFrameType(FrameKind frameType) {
         this.frameType = frameType;
     }
 
